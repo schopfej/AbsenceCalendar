@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_1_2.xsd"
+	version="1.2">
+
+	<managed-bean>
+		<managed-bean-name>applicationInfo</managed-bean-name>
+		<managed-bean-class>ch.nbc.jsf12.backing.ApplicationInfoABean</managed-bean-class>
+		<managed-bean-scope>application</managed-bean-scope>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>timeZone</managed-bean-name>
+		<managed-bean-class>ch.nbc.jsf12.backing.TimeZoneABean</managed-bean-class>
+		<managed-bean-scope>application</managed-bean-scope>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>config</managed-bean-name>
+		<managed-bean-class>ch.nbc.jsf12.backing.ConfigABean</managed-bean-class>
+		<managed-bean-scope>application</managed-bean-scope>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>portal</managed-bean-name>
+		<managed-bean-class>ch.nbc.jsf12.backing.PortalSBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>login</managed-bean-name>
+		<managed-bean-class>ch.nbc.jsf12.backing.LoginSBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+		<managed-property>
+			<property-name>config</property-name>
+			<value>#{config}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>portalBean</property-name>
+			<value>#{portal}</value>
+		</managed-property>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>messages</managed-bean-name>
+		<managed-bean-class>ch.nbc.jsf12.backing.MessagesSBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
+
+</faces-config>

@@ -1,0 +1,201 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	template="templates/template.jspx">
+	<ui:define name="title">Abwesenheitskalender</ui:define>
+	<ui:define name="header">
+		<h:outputText value="Abwesenheitskalender" styleClass="contextTitle"
+			rendered="#{not login.portalViewMode}" />
+		<h:form prependId="false" style="float: right;"
+			rendered="#{not login.portalViewMode}">
+			<h:commandLink action="#{login.logout}" value="abmelden"
+				rendered="#{accessor.validLogin}" />
+			<h:outputLink value="zum Login" rendered="#{not accessor.validLogin}" />
+		</h:form>
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText rendered="#{accessor.validLogin}">
+			<rich:panel>
+				<f:facet name="header">Zeitraum</f:facet>
+				<h:form id="timeRange" style="vertical-align: middle;"
+					prependId="false">
+					<a4j:status id="status">
+						<f:facet name="start">
+							<h:graphicImage style="margin: 0 0.4em; vertical-align: middle;"
+								value="/img/processing.gif" height="24" width="24" />
+						</f:facet>
+						<f:facet name="stop">
+							<h:graphicImage
+								style="visibility: hidden; margin: 0 0.4em; vertical-align: middle;"
+								height="24" width="24" value="/img/processing.gif" />
+						</f:facet>
+					</a4j:status>
+					<h:outputLabel value=" Beginn: " for="start" />
+					<rich:calendar value="#{absencesTimeRange.begin}" id="start"
+						inputStyle="width: 6em; text-align: center;" label="Beginn"
+						datePattern="dd.MM.yyyy" enableManualInput="true" required="true">
+						<a4j:support event="onchanged" reRender="stop,cdt"
+							ajaxSingle="true" />
+						<a4j:support event="oninputchange" reRender="stop,cdt"
+							ajaxSingle="true" />
+						<a4j:support event="onenter" reRender="stop,cdt" ajaxSingle="true" />
+						<rich:ajaxValidator event="onchange" />
+					</rich:calendar>
+
+					<h:outputLabel value=" Ende: " for="stop" style="margin-left: 1em;" />
+					<rich:calendar value="#{absencesTimeRange.end}" id="stop"
+						inputStyle="width: 6em; text-align: center;" label="Ende"
+						datePattern="dd.MM.yyyy" enableManualInput="true" required="true">
+						<a4j:support event="onchanged" reRender="stop,cdt"
+							ajaxSingle="true" />
+						<a4j:support event="oninputchange" reRender="stop,cdt"
+							ajaxSingle="true" />
+						<a4j:support event="onenter" reRender="stop,cdt" ajaxSingle="true" />
+						<rich:ajaxValidator event="onchange" />
+					</rich:calendar>
+					<rich:message for="start" ajaxRendered="true" errorLabelClass="err"
+						tooltip="true" showDetail="false" showSummary="true"
+						style="margin-left: 1em;">
+						<f:facet name="errorMarker">
+							<h:graphicImage url="/img/error.png" styleClass="msg" />
+						</f:facet>
+						<f:facet name="warnMarker">
+							<h:graphicImage url="/img/warn.png" styleClass="msg" />
+						</f:facet>
+						<f:facet name="infoMarker">
+							<h:graphicImage url="/img/info.png" styleClass="msg" />
+						</f:facet>
+					</rich:message>
+					<rich:message for="stop" ajaxRendered="true" errorLabelClass="err"
+						tooltip="true" showDetail="false" showSummary="true">
+						<f:facet name="errorMarker">
+							<h:graphicImage url="/img/error.png" styleClass="msg" />
+						</f:facet>
+						<f:facet name="warnMarker">
+							<h:graphicImage url="/img/warn.png" styleClass="msg" />
+						</f:facet>
+						<f:facet name="infoMarker">
+							<h:graphicImage url="/img/info.png" styleClass="msg" />
+						</f:facet>
+					</rich:message>
+				</h:form>
+			</rich:panel>
+			<p />
+			<style type="text/css">
+<!--
+tr.active-row>td.name,tr.active-row>td.abs {
+	background-color: #{a4jSkin.selectControlColor};
+}
+td.abs {
+	background-color: #{a4jSkin.tabDisabledTextColor};
+}
+td.we {
+	background-color: #{a4jSkin.tabBackgroundColor};
+}
+-->
+</style>
+			<h:panelGrid columns="3" rowClasses="vtop" cellpadding="0"
+				cellspacing="0">
+				<rich:panel style="text-align: center;" id="employees">
+					<f:facet name="header">Mitarbeitende</f:facet>
+					<h:form prependId="false">
+						<h:selectManyListbox size="32" id="es"
+							value="#{selectedEmployees.selected}"
+							converter="javax.faces.Integer">
+							<c:if test="#{accessor.validLogin}">
+								<c:forEach items="#{absencesTable.employeeIds}" var="id">
+									<f:selectItem itemValue="#{id}"
+										itemLabel="#{employeePool.map[id].displayName}" />
+								</c:forEach>
+							</c:if>
+						</h:selectManyListbox>
+						<p />
+						<a4j:commandButton value="Auswahl übernehmen" id="apply"
+							action="#{absencesTable.refresh}" reRender="fCalendar" />
+						<p />
+						<a4j:commandButton value="Eigene OE auswählen" id="selectOwnOu"
+							title="Mitarbeitende der eigenen OE auswählen"
+							action="#{selectedEmployees.reset}"
+							reRender="fCalendar,employees" />
+					</h:form>
+				</rich:panel>
+				<p style="width: 1em;" />
+				<h:outputText rendered="#{employeePool.size le 0}"
+					value="Derzeit sind keine Mitarbeitende verfügbar." />
+				<h:form prependId="false" rendered="#{employeePool.size gt 0}"
+					id="fCalendar">
+					<rich:dataTable id="cdt" value="#{selectedEmployees.selected}"
+						var="employeeId"
+						style="border-right: 1px solid #{a4jSkin.tableBorderColor};"
+						columnClasses="#{fn:join(absencesTable.columnClasses, ',')}">
+						<f:facet name="header">
+							<rich:columnGroup>
+								<rich:column>
+									<h:outputText value="Jahr" />
+								</rich:column>
+								<rich:columns value="#{absencesTable.yearSpans}" var="ys"
+									colspan="#{ys.length}" styleClass="s">
+									<h:outputText value="#{ys.date}" rendered="#{ys.length > 4}">
+										<f:convertDateTime pattern="yyyy"
+											timeZone="#{timeZone.current}" />
+									</h:outputText>
+								</rich:columns>
+								<rich:column style="background-image: none;" breakBefore="true">
+									<h:outputText value="Monat" />
+								</rich:column>
+								<rich:columns value="#{absencesTable.monthSpans}" var="ms"
+									colspan="#{ms.length}" styleClass="s">
+									<h:outputText value="#{ms.date}" rendered="#{ms.length > 14}">
+										<f:convertDateTime pattern="MMMM"
+											timeZone="#{timeZone.current}" />
+									</h:outputText>
+								</rich:columns>
+								<rich:column style="background-image: none;" breakBefore="true">
+									<h:outputText value="Woche" />
+								</rich:column>
+								<rich:columns value="#{absencesTable.weekSpans}" var="ws"
+									colspan="#{ws.length}" styleClass="s">
+									<h:outputText value="#{ws.date}" rendered="#{ws.length > 5}">
+										<f:convertDateTime pattern="w" timeZone="#{timeZone.current}" />
+									</h:outputText>
+								</rich:columns>
+							</rich:columnGroup>
+						</f:facet>
+						<rich:column styleClass="name" title="##{employeeId}">
+							<span style="white-space: nowrap"><h:outputText
+									value="#{employeePool.map[employeeId].displayName}" /> </span>
+						</rich:column>
+						<rich:columns value="#{absencesTable.dateList}" var="date"
+							styleClass="#{absencesTable.dateMap[employeeId][date] ne null ? 'abs' : ''} c #{day.yesterday eq date ? 'y' : ''}">
+						</rich:columns>
+					</rich:dataTable>
+					<rich:messages fatalClass="err" errorClass="err" warnClass="wrn"
+						globalOnly="true" style="font-size: 11px;">
+						<f:facet name="errorMarker">
+							<h:graphicImage url="/img/error.png" styleClass="msg" />
+						</f:facet>
+						<f:facet name="warnMarker">
+							<h:graphicImage url="/img/warn.png" styleClass="msg" />
+						</f:facet>
+						<f:facet name="infoMarker">
+							<h:graphicImage url="/img/info.png" styleClass="msg" />
+						</f:facet>
+					</rich:messages>
+				</h:form>
+			</h:panelGrid>
+			<rich:jQuery selector="#cdt tbody tr" timing="onJScall" name="t"
+				query="hover(function(){jQuery(this).addClass('active-row');},function(){jQuery(this).removeClass('active-row');})" />
+			<rich:jQuery selector="#cdt tbody tr" timing="onload"
+				query="hover(function(){jQuery(this).addClass('active-row');},function(){jQuery(this).removeClass('active-row');})" />
+			<a4j:queue size="2" sizeExceededBehavior="dropNew" oncomplete="t()"
+				name="org.richfaces.queue.global" />
+		</h:outputText>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,348 @@
+<?xml version="1.0" ?>
+<!DOCTYPE project>
+<project name="EmplAbsenceCalendar">
+
+	<!-- ======================================================= -->
+	<!-- General project settings                                -->
+	<!-- ======================================================= -->
+
+	<property file="build.properties" />
+
+	<!-- ======================================================= -->
+	<!-- Define the directory structure                          -->
+	<!-- ======================================================= -->
+
+	<!-- Set project options -->
+	<property name="project.home" value="${basedir}" />
+	<property name="project.config" value="${project.home}/config" />
+	<property name="project.dist" value="${project.home}/dist" />
+	<property name="project.build" value="${project.dist}/build" />
+	<property name="project.lib" value="${project.home}/lib" />
+	<property name="project.resource" value="${project.home}/resource" />
+	<property name="project.src" value="${project.home}/src" />
+	<property name="project.webapp" value="${project.home}/web" />
+
+	<!-- Set (CSS) cascading style sheets options -->
+	<property file="${project.config}/css.properties" />
+
+	<!-- Set customer options -->
+	<property file="${project.config}/customer/${customer.name}/customer.properties" />
+	<property file="${project.config}/customer/${customer.name}/instance/${application.instance}.properties" />
+
+	<!-- Set platform options -->
+	<property file="${project.config}/platform/${target.platform.name}.properties" />
+	<property file="${project.config}/platform/${target.platform.name}/${target.platform.version}.properties" />
+
+	<!-- Set build options -->
+	<property name="build.number.file" value="build.number" />
+	<property file="${build.number.file}" />
+
+	<property name="build.dir" value="${project.build}/${application.version}_${build.number}" />
+	<property name="dist.file" value="${project.dist}/${context.name}-${application.version}_${build.number}-${application.instance}" />
+	<property name="deploy.tomcat.dir" value="${tomcat.home}/webapps" />
+
+	<!-- create time stamps -->
+	<tstamp>
+		<format property="build.time" pattern="yyyyMMddHHmm" />
+		<format property="build.counter" pattern="yyyy.MM.dd.HH.mm.ss" />
+		<format property="build.updateversion" pattern="yyyyMMddHHmmss" offset="1" unit="second" />
+	</tstamp>
+
+	<!-- evaluate target platform properties -->
+	<condition property="build.target.netweaver">
+		<equals arg1="${target.platform.name}" arg2="netweaver" casesensitive="false" />
+	</condition>
+
+	<condition property="build.target.jee">
+		<istrue value="${platform.jee}" />
+	</condition>
+
+	<path id="classpath">
+		<!-- general runtime libraries -->
+		<fileset dir="${build.dir}/war/WEB-INF/lib">
+			<include name="*.jar" />
+		</fileset>
+
+		<!-- specific runtime libraries -->
+		<fileset dir="resource/platform/${target.platform.name}/${target.platform.version}">
+			<include name="**/*.jar" />
+		</fileset>
+
+		<!-- buildtime libraries -->
+		<fileset dir="lib/build">
+			<include name="el-*.jar" />
+			<include name="servlet-api-${platform.servlet.version}.jar" />
+		</fileset>
+		<fileset dir="lib/jco">
+			<include name="**/sapjco-${jco.version}*.jar" />
+		</fileset>
+
+		<!-- unit test libraries -->
+		<fileset dir="lib/test">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="clean-dist" description="remove distribution directory">
+		<delete dir="${project.dist}" />
+	</target>
+
+	<target name="clean-build" description="clean build directory">
+		<delete dir="${project.build}" />
+	</target>
+
+	<target name="init">
+		<echo message="build.time: ${build.time}" />
+		<echo message="Java-Home-Directory: ${java.home}" />
+		<echo message="Java-Version: ${java.version}" />
+		<echo message="target platform: ${target.platform.name} ${target.platform.version}" />
+	</target>
+
+	<target name="update-workspace" depends="init" description="update the workspace context">
+		<mkdir dir="temp" />
+		<propertyfile file="${build.number.file}" />
+		<copy todir="temp" overwrite="true">
+			<fileset dir="${project.resource}/global/war" />
+		</copy>
+		<copy todir="temp" overwrite="true">
+			<fileset dir="${project.resource}/customer/${customer.name}/war" />
+		</copy>
+		<native2ascii src="src" encoding="ISO-8859-1" dest="web/WEB-INF/classes" includes="**/*.properties" />
+		<echo message="Replacing tokens in log4j configuration: log4j.properties" />
+		<replace dir="temp/WEB-INF/classes" includes="log4j.properties">
+			<replacefilter token="---context.name---" value="${context.name}" />
+			<replacefilter token="---logging.rootCategory---" value="${logging.rootCategory}" />
+			<replacefilter token="---logging.file---" value="${logging.file}" />
+			<replacefilter token="---logging.level---" value="${logging.level}" />
+		</replace>
+		<echo message="Replacing tokens in war configuration: web.xml" />
+		<replace dir="temp/WEB-INF" includes="web.xml">
+			<replacefilter token="---application.name---" value="${application.name}" />
+			<replacefilter token="---build.time---" value="${build.time}" />
+			<replacefilter token="---build.version---" value="${application.version}_workspace" />
+			<replacefilter token="---build.debug---" value="${build.debug}" />
+			<replacefilter token="---application.helpurl---" value="${application.helpurl}" />
+			<replacefilter token="---org.richfaces.SKIN---" value="${org.richfaces.skin}" />
+			<replacefilter token="---smtp.host---" value="${smtp.host}" />
+			<replacefilter token="---smtp.sender---" value="${smtp.sender}" />
+			<replacefilter token="&lt;!-- session.timeout --&gt;" value="&lt;session-timeout&gt;${session.timeout}&lt;/session-timeout&gt;" />
+			<replacefilter token="---validate.xml---" value="true" />
+		</replace>
+		<copy todir="${project.webapp}" overwrite="true">
+			<fileset dir="temp" />
+		</copy>
+		<delete dir="temp" />
+	</target>
+
+	<target name="build-unit-tests" depends="build-war">
+		<!-- compile sources -->
+		<mkdir dir="${build.dir}/unit-tests/classes" />
+
+		<echo message="compile sources (target: ${ant.build.javac.target})" />
+		<javac srcdir="${basedir}/src" destdir="${build.dir}/unit-tests/classes" debug="${build.debug}" classpathref="classpath" encoding="utf8">
+			<!-- Only above java 1.4 usable! -->
+			<compilerarg value="-Xlint" />
+		</javac>
+	</target>
+
+	<target name="build-war">
+		<!-- copy web context resources -->
+		<copy todir="${build.dir}/war" overwrite="true">
+			<fileset dir="web" />
+		</copy>
+
+		<delete dir="${build.dir}/war/WEB-INF/classes/ch" />
+
+		<!-- copy property files -->
+		<copy todir="${build.dir}/war/WEB-INF/classes" overwrite="true">
+			<fileset dir="${project.src}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<!-- copy global resources -->
+		<copy todir="${build.dir}/war" overwrite="true">
+			<fileset dir="${project.resource}/global/war" />
+		</copy>
+
+		<!-- copy customer resources -->
+		<copy todir="${build.dir}/war" overwrite="true">
+			<fileset dir="${project.resource}/customer/${customer.name}/war" />
+		</copy>
+
+		<available file="${project.resource}/platform/${target.platform.name}/${target.platform.version}/war" property="valid.config" type="dir" />
+		<fail unless="valid.config" message="Please set valid platform parameters in build.properties${line.separator}verify the properties target.platform.name and target.platform.version" />
+
+		<!-- copy platform resources -->
+		<copy todir="${build.dir}/war" overwrite="true">
+			<fileset dir="${project.resource}/platform/${target.platform.name}/${target.platform.version}/war" />
+		</copy>
+
+		<!-- compile sources -->
+		<echo message="compile sources (target: ${ant.build.javac.target})" />
+		<javac srcdir="${basedir}/src" destdir="${build.dir}/war/WEB-INF/classes" excludes="**/test/**,**/*Test.**" debug="${build.debug}" classpathref="classpath" encoding="utf8">
+			<compilerarg value="-Xlint" />
+		</javac>
+
+		<!-- set css background -->
+		<replace dir="${build.dir}/war/css" includes="layout.css">
+			<replacefilter token=" /* ---background--- */" value="${line.separator}${css.body.background}" />
+		</replace>
+
+		<native2ascii src="src" encoding="ISO-8859-1" dest="${build.dir}/war/WEB-INF/classes" includes="**/*.properties" />
+
+		<!-- replace tokens -->
+		<echo message="replace tokens in log4j configuration: log4j.properties" />
+		<replace dir="${build.dir}/war/WEB-INF/classes" includes="log4j.properties">
+			<replacefilter token="---context.name---" value="${context.name}" />
+			<replacefilter token="---logging.file---" value="${logging.file}" />
+			<replacefilter token="---logging.rootCategory---" value="${logging.rootCategory}" />
+			<replacefilter token="---logging.level---" value="${logging.level}" />
+		</replace>
+		<echo message="Replacing tokens in war configuration: web.xml" />
+		<replace dir="${build.dir}/war/WEB-INF" includes="web.xml">
+			<replacefilter token="---application.name---" value="${application.name}" />
+			<replacefilter token="---build.time---" value="${build.time}" />
+			<replacefilter token="---build.version---" value="${application.version}_${build.number}" />
+			<replacefilter token="---build.debug---" value="${build.debug}" />
+			<replacefilter token="---application.helpurl---" value="${application.helpurl}" />
+			<replacefilter token="---org.richfaces.SKIN---" value="${org.richfaces.skin}" />
+			<replacefilter token="---smtp.host---" value="${smtp.host}" />
+			<replacefilter token="---smtp.sender---" value="${smtp.sender}" />
+			<replacefilter token="&lt;!-- session.timeout --&gt;" value="&lt;session-timeout&gt;${session.timeout}&lt;/session-timeout&gt;" />
+			<replacefilter token="---validate.xml---" value="false" />
+		</replace>
+	</target>
+
+	<target name="build-ear" depends="dist-war" if="build.target.jee">
+		<echo message="build enterprise archive files" />
+		<!-- copy global resources -->
+		<copy todir="${build.dir}/ear" overwrite="true">
+			<fileset dir="${project.resource}/global/ear">
+				<exclude name="**/*.dtd" />
+				<exclude name="**/*.xsd" />
+			</fileset>
+		</copy>
+
+		<!-- copy platform resources -->
+		<copy todir="${build.dir}/ear" overwrite="true">
+			<fileset dir="${project.resource}/platform/${target.platform.name}/${target.platform.version}/ear">
+				<exclude name="**/*.dtd" />
+				<exclude name="**/*.xsd" />
+			</fileset>
+		</copy>
+
+		<!-- replace tokens -->
+		<replace dir="${build.dir}/ear/META-INF" includes="application.xml">
+			<replacefilter token="---application.name---" value="${application.name} ${application.version}_${build.number}" />
+			<replacefilter token="---war.filename---" value="${context.name}-${application.version}_${build.number}-${application.instance}.war" />
+			<replacefilter token="---context.name---" value="${context.name}" />
+		</replace>
+
+		<antcall target="netweaver-manifest" />
+	</target>
+
+	<!-- generate sap mainfest -->
+	<target name="netweaver-manifest" if="build.target.netweaver">
+		<echo message="generate netweaver files" />
+		<property name="vendor" value="novo-bc.ch" />
+
+		<echo message="create EAR manifest" />
+		<manifest file="${build.dir}/ear/META-INF/MANIFEST.MF">
+			<attribute name="Specification-Vendor" value="SAP AG" />
+			<attribute name="Implementation-Title" value="${context.name}" />
+			<attribute name="Implementation-Vendor-Id" value="novo-bc.ch" />
+			<attribute name="Implementation-Version" value="${build.counter}" />
+		</manifest>
+		<echo message="create SAP manifest" />
+		<manifest file="${build.dir}/ear/META-INF/SAP_MANIFEST.MF">
+			<attribute name="Ext-SDM-SDA-Comp-Version" value="1" />
+			<attribute name="softwaretype" value="J2EE" />
+			<attribute name="JarSAP-Standalone-Version" value="20080124.1000" />
+			<attribute name="JarSAPProcessing-Version" value="20080124.1000" />
+			<attribute name="deployfile" value="sda-dd.xml" />
+			<attribute name="JarSAP-Version" value="20080124.1000" />
+			<attribute name="keyname" value="${context.name}" />
+			<attribute name="keyvendor" value="${vendor}" />
+			<attribute name="keylocation" value="localhost" />
+			<attribute name="keycounter" value="${build.counter}" />
+			<attribute name="componentelement" value="&lt;componentelement name=&quot;${context.name}&quot; vendor=&quot;${vendor}&quot; componenttype=&quot;DC&quot; subsystem=&quot;NO_SUBSYS&quot; location=&quot;localhost&quot; counter=&quot;${build.counter}&quot; scvendor=&quot;${vendor}&quot; scname=&quot;NBC-SOL&quot; deltaversion=&quot;F&quot; updateversion=&quot;LB-${build.updateversion}&quot; componentprovider=&quot;NOVO Business Consultants AG&quot; release=&quot;0&quot; supportpackage=&quot;b&quot; patchlevel=&quot;0&quot; changenumber=&quot;${build.number}&quot; /&gt;" />
+			<attribute name="JarSL-Version" value="20080116.1000" />
+			<attribute name="compress" value="true" />
+		</manifest>
+	</target>
+
+	<target name="build" description="build the application" depends="build-war,build-ear">
+		<echo message="build application" />
+	</target>
+
+	<target name="dist-war" depends="build-war">
+		<echo message="Create WAR (web archive) for ${target.platform.name}-${target.platform.version}${line.separator}- instance: ${application.instance}" />
+		<buildnumber />
+		<war destfile="${dist.file}.war" webxml="${build.dir}/war/WEB-INF/web.xml">
+			<fileset dir="${build.dir}/war">
+				<include name="**" />
+			</fileset>
+		</war>
+	</target>
+
+	<target name="dist-ear" depends="build" if="build.target.jee">
+		<echo message="create EAR (enterprise archive)" />
+		<ear destfile="${dist.file}.ear" manifest="${build.dir}/ear/META-INF/MANIFEST.MF" appxml="${build.dir}/ear/META-INF/application.xml">
+			<fileset dir="${project.dist}" includes="${context.name}-${application.version}_${build.number}-${application.instance}.war" />
+			<metainf dir="${build.dir}/ear/META-INF">
+				<include name="**" />
+				<exclude name="application.xml" />
+				<exclude name="MANIFEST.MF" />
+			</metainf>
+		</ear>
+
+		<!-- remove war file after ear distribution creation -->
+		<delete file="${project.dist}/${context.name}-${application.version}_${build.number}-${application.instance}.war" />
+	</target>
+
+	<target name="create-dist" depends="dist-war,dist-ear" description="create distribution files">
+		<echo message="Create distibution files for ${target.platform.name} ${target.platform.version}, instance: ${application.instance}" />
+	</target>
+
+	<target name="run-unit-tests" description="run unit tests" depends="build-unit-tests">
+		<echo message="run JUnit 4.0 tests" />
+		<junit printsummary="true" failureproperty="junit.failure">
+			<classpath refid="classpath" />
+			<classpath location="${build.dir}/war/WEB-INF/classes" />
+			<classpath location="${build.dir}/unit-tests/classes" />
+			<batchtest todir="${build.dir}/unit-tests/">
+				<fileset dir="${build.dir}/unit-tests/classes" includes="**/*Test.class" />
+				<formatter type="xml" />
+			</batchtest>
+		</junit>
+		<mkdir dir="${build.dir}/unit-tests/report" />
+		<junitreport todir="${build.dir}/unit-tests/report">
+			<fileset dir="${build.dir}/unit-tests" />
+			<report todir="${build.dir}/report" />
+		</junitreport>
+		<fail if="junit.failure" message="Unit test(s) failed.  See reports!" />
+	</target>
+
+
+	<!-- ======================================================= -->
+	<!-- Deploy the web archive to their respective servers      -->
+	<!-- ======================================================= -->
+
+	<target name="local-tomcat-deploy" depends="create-dist,local-tomcat-delete" if="tomcat.home" description="deploy the application to the local tomcat installation">
+		<copy file="${dist.file}.war" tofile="${tomcat.home}/webapps/${context.name}.war" />
+	</target>
+
+
+	<!-- ======================================================= -->
+	<!-- Deletes the webapplication files on the tomcat server   -->
+	<!-- ======================================================= -->
+
+	<target name="local-tomcat-delete" if="tomcat.home" description="remove the application from the tomcat directory">
+		<delete file="${tomcat.home}/webapps/${context.name}.war" />
+		<delete dir="${tomcat.home}/webapps/${context.name}" />
+		<delete dir="${tomcat.home}/work/Catalina/localhost/${context.name}" />
+		<delete dir="${tomcat.home}/work/Standalone/localhost/${context.name}" />
+	</target>
+
+</project>

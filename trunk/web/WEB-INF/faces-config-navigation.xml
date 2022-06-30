@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_1_2.xsd"
+	version="1.2">
+
+	<navigation-rule>
+		<description>Login rule</description>
+		<from-view-id>/login.jspx</from-view-id>
+		<navigation-case>
+			<from-outcome>success_</from-outcome>
+			<to-view-id>/employeeList.jspx</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>success</from-outcome>
+			<to-view-id>/calendar.jspx</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+
+	<navigation-rule>
+		<from-view-id>/*</from-view-id>
+		<navigation-case>
+			<from-outcome>logout</from-outcome>
+			<to-view-id>/login.jspx</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>toMessagesView</from-outcome>
+			<to-view-id>/applicationMessages.jspx</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+</faces-config>

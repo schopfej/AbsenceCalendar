@@ -1,0 +1,65 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="templates/root.xhtml">
+
+	<ui:define name="head">
+		<h:outputText rendered="#{accessor.validLogin}">
+			<meta http-equiv="refresh" content="0.5;url=calendar.jsf" />
+		</h:outputText>
+	</ui:define>
+
+	<ui:define name="content">
+		<h:form id="loginForm" style="margin: 100px;" prependId="false"
+			rendered="#{not accessor.validLogin}">
+			<h:panelGrid columns="2" cellspacing="5"
+				rendered="#{config.destinationCounter > 0}">
+				<h:outputLabel for="system" value="System" />
+				<h:selectOneMenu id="system" value="#{login.destination}"
+					style="margin-left: 1.6em;"
+					rendered="#{config.destinationCounter > 1}">
+					<f:selectItems value="#{config.destinationItems}" />
+				</h:selectOneMenu>
+				<h:outputText value="#{login.destination}"
+					style="margin-left: 1.6em;"
+					rendered="#{config.destinationCounter eq 1}" />
+
+				<h:outputLabel for="username" value="Benutzername" />
+				<h:inputText size="30" id="username" value="#{login.username}"
+					style="margin-left: 1.6em;" />
+
+				<h:outputLabel for="password" value="Passwort" />
+				<h:inputSecret size="30" id="password" value="#{login.password}"
+					style="margin-left: 1.6em;" />
+
+				<h:outputText />
+				<h:outputText>
+					<h:messages globalOnly="true" errorClass="err" fatalClass="ftl"
+						infoClass="nfo" warnClass="wrn"
+						style="margin-left: 1.6em; font-size: smaller;" layout="table" />
+				</h:outputText>
+
+				<h:outputText />
+				<h:commandButton action="#{login.login}" value="anmelden" id="login"
+					style="margin-left: 1.6em;" />
+			</h:panelGrid>
+			<h:outputText rendered="#{config.destinationCounter lt 1}"
+				value="No backend destination defined. Check the application configuration." />
+		</h:form>
+		<h:panelGroup style="margin: 100px;" rendered="#{accessor.validLogin}">
+			<h:outputText value="Sie sind bereits angemeldet." />
+			<h:messages globalOnly="true" errorClass="err" fatalClass="ftl"
+				infoClass="nfo" warnClass="wrn"
+				style="margin-left: 1.6em; font-size: smaller;" layout="table" />
+		</h:panelGroup>
+		<f:verbatim
+			rendered="#{not accessor.validLogin and config.destinationCounter > 0}">
+			<script type="text/javascript">
+				document.getElementById('username').focus();
+			</script>
+		</f:verbatim>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,133 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="templates/root.xhtml">
+
+	<ui:define name="head">
+		<style type="text/css">
+<!--
+.infobox {
+	padding: 0.6em;
+	width: 400px;
+	margin-top: 0.9em;
+	font-size: 0.7em;
+}
+
+.infoboxHead {
+	padding-bottom: 0.5em;
+	font-size: 1.1em;
+}
+
+.lc {
+	width: 9em;
+}
+-->
+</style>
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText styleClass="contextTitle"
+			value="Technische Angaben zur Konfiguration" />
+		<h:panelGroup styleClass="formBorderHighlight infobox" layout="block">
+			<h:panelGrid columns="2" headerClass="infoboxHead"
+				columnClasses="lc vc" style="width: 100%;">
+				<f:facet name="header">Application</f:facet>
+
+				<h:outputText value="Name" />
+				<h:outputText value="#{initParam['application.name']}" />
+				<h:outputText value="Version" />
+				<h:outputText
+					value="#{empty initParam['build.version'] ? '&lt;not set>' : initParam['build.version']}" />
+				<h:outputText value="Build" />
+				<h:outputText
+					value="#{empty initParam['build.time'] ? '&lt;not set>' : initParam['build.time']}" />
+				<h:outputText value="Debug" />
+				<h:outputText
+					value="#{empty initParam['build.debug'] ? '&lt;not set>' : initParam['build.debug']}" />
+				<h:outputText value="SAP Portal Mode" />
+				<h:outputText value="#{login.portalViewMode ? 'yes' : 'no'}" />
+				<h:outputText value="SAP SSO-Ticket" />
+				<h:outputText
+					value="#{cookie['MYSAPSSO2'] eq null ? '&lt;not indicated>' : '&lt;indicated>'}" />
+				<h:outputText value="Help URL" />
+				<h:outputText
+					value="#{empty initParam['application.helpurl'] ? '&lt;not set>' : initParam['application.helpurl']}" />
+				<h:outputText value="Context path" />
+				<h:outputText value="#{application.contextPath}" />
+				<h:outputText value="Supported locales" />
+				<h:outputText value="#{applicationInfo.supportedLocales}" />
+			</h:panelGrid>
+		</h:panelGroup>
+		<h:panelGroup styleClass="formBorderHighlight infobox" layout="block">
+			<h:panelGrid columns="2" headerClass="infoboxHead"
+				columnClasses="lc vc" style="width: 100%;">
+				<f:facet name="header">Session</f:facet>
+
+				<h:outputText value="Id" />
+				<h:outputFormat value="#{session.id}" />
+				<h:outputText value="Age" />
+				<h:outputFormat value="{2,number,00}:{1,number,00}:{0,number,00}">
+					<f:param
+						value="#{(applicationInfo.now.time - session.creationTime) / 1000 mod 60}" />
+					<f:param
+						value="#{(applicationInfo.now.time - session.creationTime) / 60000 mod 60}" />
+					<f:param
+						value="#{(applicationInfo.now.time - session.creationTime) / 3600000}" />
+				</h:outputFormat>
+				<h:outputText value="Creation time" />
+				<h:outputText value="#{session.creationTime}">
+					<f:convertDateTime timeZone="#{timeZone.current}" type="both" />
+				</h:outputText>
+				<h:outputText value="Last access" />
+				<h:outputText value="#{session.lastAccessedTime}">
+					<f:convertDateTime timeZone="#{timeZone.current}" type="both" />
+				</h:outputText>
+				<h:outputText value="Timeout" />
+				<h:outputFormat value="{1,number,0} hours {0} minutes">
+					<f:param value="#{session.maxInactiveInterval div 60 % 60}" />
+					<f:param value="#{session.maxInactiveInterval div 3600}" />
+				</h:outputFormat>
+			</h:panelGrid>
+		</h:panelGroup>
+		<h:panelGroup styleClass="formBorderHighlight infobox" layout="block">
+			<h:panelGrid columns="2" headerClass="infoboxHead"
+				columnClasses="lc vc" style="width: 100%;">
+				<f:facet name="header">Request</f:facet>
+
+				<h:outputText value="Character encoding" />
+				<h:outputText value="#{request.characterEncoding}" />
+				<h:outputText value="Locale" />
+				<h:outputText value="#{request.locale}" />
+				<h:outputText value="Server name" />
+				<h:outputText value="#{request.serverName}" />
+				<h:outputText value="Server port" />
+				<h:outputText value="#{request.serverPort}" />
+				<h:outputText value="HTTP-Method" />
+				<h:outputText value="#{request.method}" />
+				<h:outputText value="User-Agent" />
+				<h:outputText value="#{header['user-agent']}" />
+			</h:panelGrid>
+		</h:panelGroup>
+		<h:panelGroup styleClass="formBorderHighlight infobox" layout="block">
+			<h:panelGrid columns="2" headerClass="infoboxHead"
+				columnClasses="lc vc" style="width: 100%;">
+				<f:facet name="header">Servlet container</f:facet>
+				<h:outputText value="Software" />
+				<h:outputText value="#{application.serverInfo}" />
+				<h:outputText value="Servlet version" />
+				<h:outputText
+					value="#{application.majorVersion}.#{application.minorVersion}" />
+				<h:outputText value="Working directory" />
+				<h:outputText value="#{applicationInfo.workingDirectory}" />
+				<h:outputText value="Time zone" />
+				<h:outputText value="#{timeZone.current}" />
+			</h:panelGrid>
+		</h:panelGroup>
+		<h:panelGroup layout="block" styleClass="fixedMenu"
+			style="background-color: #{a4jSkin.tabBackgroundColor};"
+			rendered="#{not initParam['portal.mode']}">
+			<a href=".">zurück zum Einstieg</a>
+		</h:panelGroup>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,46 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="templates/root.xhtml">
+
+	<ui:define name="content">
+		<h:panelGroup id="content">
+			<div class="contextTitle" style="margin-top: 0;">System-Meldungen</div>
+			<br style="clear: left;" />
+			<h:outputText rendered="#{empty messages.list}">
+				<div>Es sind derzeit keine Meldungen vorhanden.</div>
+			</h:outputText>
+			<a4j:form rendered="#{not empty messages.list}">
+				<rich:dataTable value="#{messages.list}" var="item" rows="12">
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Zeitpunkt" />
+						</f:facet>
+						<h:outputText value="#{item.timestamp}">
+							<f:convertDateTime type="both" timeZone="#{timeZone.current}" />
+						</h:outputText>
+					</rich:column>
+					<rich:column rendered="false">
+						<f:facet name="header">
+							<h:outputText value="Typ" />
+						</f:facet>
+						<h:outputText value="#{item.type}"></h:outputText>
+					</rich:column>
+					<rich:column>
+						<f:facet name="header">
+							<h:outputText value="Meldung" />
+						</f:facet>
+						<h:outputText value="#{item.text}"></h:outputText>
+					</rich:column>
+				</rich:dataTable>
+				<p />
+				<a4j:commandButton value="Meldungen löschen"
+					action="#{messages.reset}" reRender="content" />
+			</a4j:form>
+		</h:panelGroup>
+	</ui:define>
+</ui:composition>

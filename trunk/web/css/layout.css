@@ -1,0 +1,77 @@
+@import url("bgimg.css.jsp");
+@charset "UTF-8";
+
+body { /* ---background--- */
+	font-family: sans-serif;
+	padding: 1em;
+}
+
+form {
+	margin: 0;
+	padding: 0;
+}
+
+.msg {
+	padding-right: 0.5em;
+	vertical-align: middle;
+}
+
+.err {
+	color: red;
+}
+
+.wrn {
+	color: orange;
+}
+
+.contextTitle {
+	font-weight: bold;
+	color: black;
+	line-height: 2em;
+}
+
+.fixedMenu {
+	position: fixed;
+	top: 0;
+	right: 10em;
+	padding: 0.4em 0.8em 0.4em 1.7em;
+	background-image: url("../img/tlbr.png");
+	background-position: top left;
+	background-repeat: no-repeat;
+}
+
+.rich-panel .rich-panel-header {
+	border-width: 0;
+}
+
+tbody+tbody {
+	display: none;
+}
+
+td.name {
+	white-space: nowrap;
+	padding: 3px 5px;
+}
+
+td.c {
+	padding: 1px 2px 1px 1px;
+	border-right: none;
+}
+
+td.y {
+	border-right: #f00 solid 1.5px;
+}
+
+th.s {
+	padding: 2px;
+}
+
+.formBorderHighlight {
+	vertical-align: top; /*width: 100%;*/
+	border: 1px solid #CCCCCC;
+	padding: 4px;
+}
+
+.vtop {
+	vertical-align: top;
+}

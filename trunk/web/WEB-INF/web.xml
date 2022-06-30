@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+	<display-name>EmployeeAbsenceCalendar 1.6_workspace</display-name>
+
+	<!-- Build information -->
+	<context-param>
+		<param-name>build.time</param-name>
+		<param-value>202008141450</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>build.version</param-name>
+		<param-value>1.6_workspace</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>build.debug</param-name>
+		<param-value>true</param-value>
+	</context-param>
+
+	<!-- Application configuration -->
+	<context-param>
+		<param-name>application.name</param-name>
+		<param-value>EmployeeAbsenceCalendar</param-value>
+	</context-param>
+
+	<!-- JSF runtime settings -->
+	<context-param>
+		<param-name>javax.faces.CONFIG_FILES</param-name>
+		<param-value>/WEB-INF/faces-config-framework-beans.xml,/WEB-INF/faces-config-application-beans.xml,/WEB-INF/faces-config-navigation.xml</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+		<param-value>server</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>javax.faces.DEFAULT_SUFFIX</param-name>
+		<param-value>.jspx</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>com.sun.faces.validateXml</param-name>
+		<param-value>true</param-value>
+	</context-param>
+
+	<!-- RichFaces settings -->
+	<context-param>
+		<param-name>org.richfaces.CONTROL_SKINNING</param-name>
+		<param-value>enable</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>org.richfaces.SKIN</param-name>
+		<param-value>blueSky</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>org.richfaces.LoadScriptStrategy</param-name>
+		<param-value>ALL</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>org.richfaces.LoadStyleStrategy</param-name>
+		<param-value>ALL</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>org.ajax4jsf.handleViewExpiredOnClient</param-name>
+		<param-value>true</param-value>
+	</context-param>
+
+	<!-- error pages -->
+	<error-page>
+		<error-code>404</error-code>
+		<location>/applicationMessages.jsf</location>
+	</error-page>
+
+	<error-page>
+		<exception-type>javax.faces.application.ViewExpiredException</exception-type>
+		<location>/WEB-INF/sessionTimeoutHandler.jsp</location>
+	</error-page>
+
+	<error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<location>/WEB-INF/errorHandlerUnspecific.jsp</location>
+	</error-page>
+
+	<!-- RichFaces filter -->
+	<filter>
+		<display-name>RichFaces Filter</display-name>
+		<filter-name>richfaces</filter-name>
+		<filter-class>org.ajax4jsf.Filter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>richfaces</filter-name>
+		<servlet-name>Faces Servlet</servlet-name>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>JsfViewExpiredFilter</filter-name>
+		<filter-class>ch.nbc.servlet.filter.ServletRuntimeExceptionFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>JsfViewExpiredFilter</filter-name>
+		<servlet-name>Faces Servlet</servlet-name>
+	</filter-mapping>
+
+	<!-- Faces Servlet -->
+	<servlet>
+		<servlet-name>Faces Servlet</servlet-name>
+		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<!-- extension mapping -->
+	<servlet-mapping>
+		<servlet-name>Faces Servlet</servlet-name>
+		<url-pattern>*.jsf</url-pattern>
+	</servlet-mapping>
+
+	<session-config>
+		<!--session.timeout -->
+	</session-config>
+
+	<!-- Welcome files -->
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+
+	<security-constraint>
+		<display-name>restrict access</display-name>
+		<web-resource-collection>
+			<web-resource-name>facelets</web-resource-name>
+			<url-pattern>*.jspx</url-pattern>
+			<url-pattern>/facelets/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint></auth-constraint>
+	</security-constraint>
+</web-app>
